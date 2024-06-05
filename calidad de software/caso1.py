@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_mysqldb import MySQL
-
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
-
 
 # Configuración de la base de datos MySQL
 app.config['MYSQL_HOST'] = 'bpodpedbpytr3ztavoei-mysql.services.clever-cloud.com'
@@ -18,9 +17,19 @@ mysql = MySQL(app)
 
 @app.route('/')
 def index():
-    # En este ejemplo, enviamos una variable 'variable' al HTML
-    variable = "Hola desde Flask!"
-    return render_template('index.html', variable=variable)
+    # Obtener la ruta de la carpeta templates
+    template_folder = os.path.join(app.root_path, 'templates')
+
+    # Obtener todos los archivos HTML en la carpeta templates
+    html_files = [file for file in os.listdir(template_folder) if file.endswith('.html')]
+
+    # Renderizar cada archivo HTML en la carpeta templates
+    rendered_templates = []
+    for html_file in html_files:
+        with open(os.path.join(template_folder, html_file), 'r') as file:
+            rendered_templates.append(file.read())
+
+    return '<br>'.join(rendered_templates)
 
 # Ruta para obtener todos los usuarios
 @app.route('/usuarios', methods=['GET'])
@@ -84,6 +93,7 @@ def crear_tarea():
     mysql.connection.commit()
     cur.close()
     return jsonify({"mensaje": "Tarea creada exitosamente"})
+
 # Ruta para actualizar un usuario
 @app.route('/usuarios/<int:id>', methods=['PUT'])
 def actualizar_usuario(id):
